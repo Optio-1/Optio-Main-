@@ -1,0 +1,2557 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Optio</title>
+
+  <style>
+    /* =========================
+       THEMES
+    ========================== */
+    :root{
+      --bg: #0f0a18;
+--text: #e9e6ff;
+--muted: rgba(233,230,255,0.70);
+--stroke: rgba(255,255,255,0.08);
+
+--panel: rgba(255,255,255,0.04);
+--panel2: rgba(255,255,255,0.07);
+
+--accent: #7a3cff;
+--accent2: rgba(122,60,255,0.18);
+
+      --yellow: #ffd84d;
+      --ringSize: 580px;
+      --ringSizeRun: 720px;
+
+      --sidebarW: 64px;
+      --sidebarWOpen: 220px;
+
+      /* Success flash */
+      --success: #27d77a;
+      --success2: rgba(39,215,122,0.20);
+    }
+
+    [data-theme="light"]{
+      --bg: #f4f7fb;
+      --text: #0b1220;
+      --muted: rgba(11,18,32,0.65);
+      --stroke: rgba(0,0,0,0.10);
+      --panel: rgba(0,0,0,0.03);
+      --panel2: rgba(0,0,0,0.05);
+
+      --accent: #7f8a9a; /* slate grey */
+      --accent2: rgba(127,138,154,0.18);
+
+      --success: #22c86f;
+      --success2: rgba(34,200,111,0.18);
+    }
+
+    [data-theme="forest"]{
+      --bg: #07120d;
+      --text: #eafff4;
+      --muted: rgba(234,255,244,0.70);
+      --stroke: rgba(255,255,255,0.10);
+      --panel: rgba(255,255,255,0.05);
+      --panel2: rgba(255,255,255,0.07);
+
+      --accent: #3bd28f; /* forest green */
+      --accent2: rgba(59,210,143,0.18);
+
+      /* different green in forest mode */
+      --success: #7af7c9;
+      --success2: rgba(122,247,201,0.20);
+    }
+[data-theme="espresso"]{
+  --bg: #e6d8c7;
+  --text: #3a2e25;
+  --muted: rgba(58,46,37,0.65);
+  --stroke: rgba(58,46,37,0.15);
+  --panel: #dccab6;
+  --panel2: #d4c0ab;
+
+  --accent: #8b6a4f;
+  --accent2: rgba(139,106,79,0.22);
+
+  --success: #9b7558;
+  --success2: rgba(155,117,88,0.22);
+}
+
+
+
+
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      background: var(--bg);
+      color: var(--text);
+      overflow-x:hidden;
+    }
+
+    /* =========================
+       SIDEBAR
+    ========================== */
+    .sidebar{
+  position: fixed;
+  left: 18px;
+  top: 18px;
+  width: auto;
+  height: auto;
+  background: transparent;
+  border: none;
+  display: block;
+  padding: 0;
+  z-index: 60;
+}
+
+    [data-theme="light"] .sidebar{ background: rgba(0,0,0,0.02); }
+    .sidebar.open{ width: var(--sidebarWOpen); }
+
+    .burger{
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      border: 1px solid var(--stroke);
+      background: var(--panel2);
+      display:grid;
+      place-items:center;
+      cursor:pointer;
+      user-select:none;
+    }
+    .burger svg{ opacity: 0.85; }
+
+    .navTitle{
+      font-size: 12px;
+      color: var(--muted);
+      margin: 0 4px;
+      display:none;
+    }
+    .sidebar.open .navTitle{ display:block; }
+
+    .nav{
+      display:flex;
+      flex-direction:column;
+      gap: 8px;
+      padding: 0 2px;
+    }
+    .nav a{
+      text-decoration:none;
+      color: var(--text);
+      border: 1px solid transparent;
+      border-radius: 14px;
+      padding: 10px 12px;
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      background: transparent;
+      opacity: 0.92;
+      user-select:none;
+    }
+    .nav a .dot{
+      width: 10px; height: 10px; border-radius: 99px;
+      background: rgba(255,255,255,0.16);
+      border: 1px solid var(--stroke);
+      flex: 0 0 auto;
+    }
+    [data-theme="light"] .nav a .dot{ background: rgba(0,0,0,0.08); }
+    .nav a.active{
+      background: var(--accent2);
+      border-color: rgba(255,255,255,0.10);
+    }
+    [data-theme="light"] .nav a.active{ border-color: rgba(0,0,0,0.10); }
+    .nav a span{
+      display:none;
+      white-space:nowrap;
+    }
+    .sidebar.open .nav a span{ display:inline; }
+
+    /* =========================
+       MAIN WRAP
+    ========================== */
+   .wrap{
+  margin-left: 0;
+  min-height: auto;
+  padding: 22px 26px;
+}
+
+    
+
+    /* =========================
+       PAGES
+    ========================== */
+ 
+.page{
+  display:none;
+  width: 100%;
+}
+
+.page.active{
+  display:block;
+}
+
+    header{
+      display: none;
+      display:grid;
+      grid-template-columns:auto 1fr auto;
+      align-items:center;
+      gap: 12px;
+      margin-bottom: 18px;
+      
+    }
+    .leftHead{
+      display:flex;
+      align-items:center;
+      gap: 12px;
+      padding-left: 6px;
+    }
+    
+.titlePill{
+  position: fixed;
+  top: 18px;
+  left: 72px; /* burger width + spacing */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 18px;
+  border-radius: 999px;
+  border: 1px solid var(--stroke);
+  background: var(--panel);
+  font-weight: 950;
+  letter-spacing: 0.2px;
+  font-size: 20px;
+  user-select: none;
+  z-index: 60;
+}
+
+    .rightHead{
+      display:flex;
+      justify-content:flex-end;
+      align-items:center;
+      gap: 12px;
+    }
+
+    .themeBtn{
+      border-radius: 999px;
+      border: 1px solid var(--stroke);
+      background: var(--panel2);
+      color: var(--text);
+      font-weight: 850;
+      padding: 10px 12px;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      user-select:none;
+    }
+    .themeDot{
+  width: 12px;
+  height: 12px;
+  border-radius: 99px;
+  background: var(--accent);
+  box-shadow: 0 0 0 4px var(--accent2);
+}
+
+    .styleTabs{
+      display:flex;
+      gap:6px;
+      padding: 4px;
+      border: 1px solid var(--stroke);
+      background: var(--panel2);
+      border-radius: 999px;
+      margin-left: 8px;
+    }
+    .styleBtn{
+      border:0;
+      background: transparent;
+      color: var(--muted);
+      font-size: 12px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      cursor:pointer;
+      line-height:1;
+      display:flex;
+      align-items:center;
+      gap:6px;
+      user-select:none;
+    }
+    .styleBtn .mini{
+      width: 8px; height: 8px; border-radius: 99px;
+      border: 1px solid var(--stroke);
+      background: rgba(255,255,255,0.14);
+    }
+    [data-theme="light"] .styleBtn .mini{ background: rgba(0,0,0,0.08); }
+    .styleBtn.active{
+      background: rgba(255,255,255,0.10);
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+    [data-theme="light"] .styleBtn.active{
+      background: rgba(0,0,0,0.06);
+      border: 1px solid rgba(0,0,0,0.10);
+    }
+    .styleBtn.active .mini{
+      background: var(--accent);
+      border-color: transparent;
+    }
+
+
+    /* =========================
+       LAYOUT
+    ========================== */
+    .main{
+      display:grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 22px;
+      width: 100%;
+      align-items: center;        /* FIXED (was typo) */
+    }
+
+    .visualWrap{
+      display:grid;
+      place-items:center;
+      padding: 8px 0;
+      width: 100%;
+    }
+    .visual{
+      width: var(--ringSize);
+      max-width: 100%;
+      filter: none;
+    }
+    .running .visual{ width: var(--ringSizeRun); }
+
+    .stack{
+      position:relative;
+      display:grid;
+      place-items:center;
+    }
+
+   .timeText{
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 3;
+}
+
+ 
+
+    .timeBig{
+      font-size: 96px;
+      font-weight: 950;
+      letter-spacing: 1px;
+      line-height: 1;
+    }
+
+    .timeBelow{
+      margin-top: 14px;
+      padding: 10px 16px;
+      border-radius: 999px;
+      border: 1px solid var(--stroke);
+      background: var(--panel);
+      font-weight: 950;
+      letter-spacing: 1px;
+      font-size: 18px;
+      user-select: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+      .phaseLabel{
+  margin-top: 10px;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  color: var(--muted);
+  text-align: center;
+  user-select: none;
+}
+body.running .phaseLabel{
+  color: var(--text);
+}
+
+    .running .timeBig{ font-size: 110px; }
+
+    .phaseSmall{ display:none; }
+
+    /* Slightly less boxed (but not scattered) */
+    .rightCol{
+      display:flex;
+      flex-direction:column;
+      gap: 18px;                /* was 14px */
+      width: 100%;
+      max-width: 480px;
+      justify-self:end;
+      margin-top: -35px;
+      position: relative;
+      z-index: 10;
+      pointer-events: auto;
+    }
+
+    .inputs{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 12px;               /* was 10px */
+      justify-items: start;    /* keep inputs from stretching */
+    }
+    .running .inputs{ display:none; }
+
+    label{
+      display:block;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    /* Inputs not too wide */
+    input{
+      width: 100%;
+      max-width: 100%;        /* NEW: prevents long boxes */
+      height: 44px;
+      padding: 0 14px;
+      border-radius: 999px;
+      border: 1px solid var(--stroke);
+      background: rgba(0,0,0,0.12);
+      color: var(--text);
+      outline:none;
+      font-weight: 700;
+      appearance: textfield;
+    }
+
+/* Remove default number arrows */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button{
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type=number]{
+  -moz-appearance: textfield;
+}
+
+    [data-theme="light"] input{ background: rgba(255,255,255,0.75); }
+    [data-theme="forest"] input{ background: rgba(255,255,255,0.06); }
+
+    .controls{
+      display:flex;
+      flex-direction:column;
+      gap: 14px;               /* was 12px */
+    }
+    .btnRow{
+      display:flex;
+      gap: 12px;               /* was 10px */
+      flex-wrap:wrap;
+    }
+    button{
+      border-radius: 12px;
+      border: 1px solid var(--stroke);
+      padding: 12px 12px;
+      background: var(--panel2);
+      color: var(--text);
+      font-weight: 900;
+      cursor:pointer;
+      flex:1;
+      min-width: 120px;
+      user-select:none;
+    }
+    button.primary{
+      background: rgba(255,255,255,0.12);
+      border-color: rgba(255,255,255,0.16);
+    }
+    [data-theme="light"] button.primary{
+      background: rgba(0,0,0,0.06);
+      border-color: rgba(0,0,0,0.10);
+    }
+    button:disabled{ opacity:0.55; cursor:not-allowed; }
+
+    .skipHint{
+      .summaryRow{
+  margin-top: 10px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--muted);
+  letter-spacing: 0.3px;
+}
+
+      font-size: 12px;
+      color: var(--muted);
+      margin-left: 2px;
+    }
+
+    .meta{
+      display:flex;
+      justify-content:space-between;
+      gap: 10px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    /* Sound toggle moved out of right column; bottom-right on TIMER page only */
+    
+   .soundFloating{
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 60;
+  display: none;
+
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+ .themeMiniBtn{
+  border-radius: 999px;
+  padding: 10px 14px;
+  border: 1px solid var(--stroke);
+  background: var(--panel2);
+  font-weight: 900;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap: 8px;
+}
+
+.themeMiniBtn .themeDot{
+  width: 12px;
+  height: 12px;
+  border-radius: 99px;
+  background: var(--accent);
+  box-shadow: 0 0 0 4px var(--accent2);
+}
+
+    .soundToggleBtn{
+      border-radius: 999px;
+      padding: 10px 14px;
+      border: 1px solid var(--stroke);
+      background: var(--panel2);
+      font-weight: 950;
+      cursor:pointer;
+      transition: background 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+      user-select: none;
+    }
+    .soundToggleBtn.on{
+      background: rgba(170, 240, 200, 0.9);
+      border-color: rgba(120, 200, 160, 1);
+      box-shadow: inset 0 0 0 2px rgba(120, 200, 160, 0.6);
+      color: #062015;
+    }
+    .soundToggleBtn.off{
+      background: rgba(255, 190, 190, 0.9);
+      border-color: rgba(220, 120, 120, 1);
+      box-shadow: inset 0 0 0 2px rgba(220, 120, 120, 0.6);
+      color: #2a0606;
+    }
+
+    .vis{ display:none; }
+    .vis.active{ display:block; }
+
+    .flipWrap{
+      width: var(--ringSize);
+      max-width: 100%;
+      display:grid;
+      place-items:center;
+      gap: 12px;
+      user-select:none;
+    }
+    .running .flipWrap{ width: var(--ringSizeRun); }
+
+    .bar{
+      width: min(540px, 100%);
+      height: 14px;
+      border-radius: 999px;
+      border: 1px solid var(--stroke);
+      background: rgba(0,0,0,0.10);
+      overflow:hidden;
+    }
+    [data-theme="light"] .bar{ background: rgba(0,0,0,0.05); }
+    [data-theme="forest"] .bar{ background: rgba(255,255,255,0.05); }
+
+    .barFill{
+      height:100%;
+      width: 0%;
+      background: var(--accent);
+      border-radius: 999px;
+      transition: width 120ms linear;
+    }
+
+    /* visuals never steal clicks */
+    .visualWrap, .visualWrap *{ pointer-events:none; }
+
+    /* ===== FORCE LARGE CENTRE TEXT (FINAL OVERRIDE) ===== */
+    #visRing .timeBig{
+      font-size: 88px !important;
+      font-weight: 950;
+      letter-spacing: 1px;
+    }
+
+#ringProg{
+  transition: stroke-dashoffset 0.3s linear;
+}
+#fillRect{
+  transition: y 0.3s linear, height 0.3s linear;
+}
+
+    #visWater .timeBig{
+      font-size: 88px !important;
+      font-weight: 950;
+      letter-spacing: 1px;
+    }
+    body.running #visRing .timeBig,
+    body.running #visWater .timeBig{
+      font-size: 104px !important;
+    }
+
+/* ===== FORCE CONSISTENT FONT FOR SWEEP MODE ===== */
+#visFlip .timeBig{
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial !important;
+  font-weight: 950 !important;
+  font-size: 88px !important;
+  letter-spacing: 1px;
+}
+
+body.running #visFlip .timeBig{
+  font-size: 104px !important;
+}
+
+#visFlip .phaseLabel,
+#visFlip .phaseSmall{
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial !important;
+  font-weight: 800;
+  font-size: 14px;
+  margin-top: 8px;
+  color: var(--muted);
+}
+
+
+
+/* ===== FIX SWEEP TIMER TEXT SIZE ===== */
+#visFlip .timeText{
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+#visFlip .timeBig{
+  font-size: 96px !important;
+  line-height: 1;
+}
+
+
+    /* Water: we now use SVG-centred % only */
+    #visWater .timeText{ display:none !important; }
+
+    /* Simple page content style */
+    .pageCard{
+      border: 1px solid var(--stroke);
+      background: var(--panel);
+      border-radius: 18px;
+      padding: 18px;
+    }
+ /* ===== Schedule Start Popup ===== */
+
+.schedulePopupOverlay{
+  position: fixed;
+  inset: 0;
+  backdrop-filter: blur(8px);
+  background: rgba(0,0,0,0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 300ms ease;
+}
+/* ===== Center Nav Overlay ===== */
+
+.navOverlay{
+  position: fixed;
+  inset: 0;
+  backdrop-filter: blur(10px);
+  background: rgba(0,0,0,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 180;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 250ms ease;
+}
+
+.navOverlay.show{
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.navOverlayCard{
+  width: min(360px, 90%);
+  background: var(--panel);
+  border: 1px solid var(--stroke);
+  border-radius: 22px;
+  padding: 20px;
+  box-shadow: 0 25px 60px rgba(0,0,0,0.35);
+  transform: scale(0.96);
+  transition: transform 250ms ease;
+}
+
+.navOverlay.show .navOverlayCard{
+  transform: scale(1);
+}
+
+.navOverlayTitle{
+  text-align: center;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 1.4px;
+  color: var(--muted);
+  margin-bottom: 14px;
+}
+
+.navOverlayBtn{
+  width: 100%;
+  padding: 14px;
+  border-radius: 16px;
+  border: 1px solid var(--stroke);
+  background: var(--panel2);
+  color: var(--text);
+  font-weight: 900;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.navOverlayBtn:last-child{
+  margin-bottom: 0;
+}
+
+.navOverlayBtn:hover{
+  background: var(--accent2);
+}
+
+.navOverlayDot{
+  width: 10px;
+  height: 10px;
+  border-radius: 99px;
+  background: var(--accent);
+  box-shadow: 0 0 0 4px var(--accent2);
+}
+
+.schedulePopupOverlay.show{
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.schedulePopupCard{
+  background: var(--panel);
+  border: 1px solid var(--stroke);
+  padding: 28px 36px;
+  border-radius: 22px;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+  transform: scale(0.95);
+  transition: transform 300ms ease;
+}
+
+.schedulePopupOverlay.show .schedulePopupCard{
+  transform: scale(1);
+}
+
+.schedulePopupTitle{
+  font-size: 20px;
+  font-weight: 900;
+  margin-bottom: 8px;
+}
+
+.schedulePopupSub{
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+ /* ===== Timetable UI (Step 1) ===== */
+.ttPanel{
+  border: 1px solid var(--stroke);
+  background: var(--panel);
+  border-radius: 18px;
+  padding: 18px;
+  max-width: 520px;
+}
+
+.ttLabelRow{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.ttLabel{
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 1.4px;
+  color: var(--muted);
+}
+
+.ttHint{
+  font-size: 12px;
+  font-weight: 850;
+  color: var(--muted);
+}
+
+.subjectList{
+  display:flex;
+  flex-direction:column;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+/* Timetable subjects container uses an ID, so apply same layout */
+#subjectList{
+  display:flex;
+  flex-direction:column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.subjectRow{
+  display:flex;
+  gap: 10px;
+  align-items:center;
+}
+
+.subjectRow input{
+  max-width: none;
+  flex: 1;
+}
+
+.removeSubjectBtn{
+  flex: 0 0 44px;
+  min-width: auto;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  border: 1px solid var(--stroke);
+  background: var(--panel2);
+  font-weight: 950;
+  cursor: pointer;
+
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ttActions{
+  display:flex;
+  gap: 10px;
+}
+
+    .pageCard h2{ margin: 0 0 8px; font-size: 20px; }
+    .pageCard p{ margin: 0; color: var(--muted); }
+
+    /* Hide visual style tabs on non-timer pages */
+    /* =========================
+   THEME DRAWER
+========================= */
+
+.themeDrawer{
+  position: fixed;
+  top: 0;
+  width: 300px;
+  height: 100%;
+  background: var(--panel);
+  border-right: 1px solid var(--stroke);
+  z-index: 100;
+  backdrop-filter: blur(4px);
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+  will-change: transform;
+
+  
+}
+
+.themeDrawer.open{
+  transform: translateX(0);
+
+}
+
+.themeDrawerContent{
+  padding: 24px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.themeDrawerTitle{
+  font-weight: 900;
+  font-size: 14px;
+  letter-spacing: 1px;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+
+.themeOption{
+  border-radius: 14px;
+  padding: 14px;
+  font-weight: 900;
+  cursor: pointer;
+  border: 1px solid transparent;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+}
+
+/* Midnight */
+.themeOption[data-theme="dark"]{
+  background: #1a1329;
+  color: #ffffff;
+  border: 1px solid rgba(122,60,255,0.35);
+  box-shadow: inset 4px 0 0 #7a3cff;
+}
+
+/* Light */
+.themeOption[data-theme="light"]{
+  background: #ffffff;
+  color: #1c2430;
+  border: 1px solid rgba(127,138,154,0.4);
+  box-shadow: inset 4px 0 0 #7f8a9a;
+}
+
+/* Forest */
+.themeOption[data-theme="forest"]{
+  background: #0d1f18;
+  color: #eafff4;
+  border: 1px solid rgba(59,210,143,0.4);
+  box-shadow: inset 4px 0 0 #3bd28f;
+}
+
+/* Espresso */
+.themeOption[data-theme="espresso"]{
+  background: #f0e2d2;
+  color: #3a2e25;
+  border: 1px solid rgba(139,106,79,0.4);
+  box-shadow: inset 4px 0 0 #8b6a4f;
+}
+.themeOption.active{
+  transform: translateX(4px);
+  box-shadow: inset 6px 0 0 var(--accent), 0 6px 18px rgba(0,0,0,0.15);
+}
+.themeOption:hover{
+  transform: translateX(4px);
+  opacity: 0.95;
+}
+
+
+
+
+
+.themeOverlay{
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  backdrop-filter: blur(4px);
+  z-index: 90;
+  display: none;
+}
+
+.themeOverlay.show{
+  display: block;
+}
+
+    .hideTimerTabs #timerTabs{ display:none !important; }
+
+.controlPanel{
+  border: 1px solid var(--stroke);
+  background: var(--panel);
+  border-radius: 18px;
+  padding: 22px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.controlTitle{
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 1.5px;
+  text-align: center;
+  color: var(--muted);
+}
+
+   
+ 
+.stepperWrap{
+  position: relative;
+  max-width: 260px;
+}
+.pillRow{
+  display: flex;
+  gap: 18px;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 18px;
+}
+
+.pillGroup{
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.pillGroup label{
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  color: var(--muted);
+}
+
+.stepperWrap input{
+  width: 100%;
+  padding-right: 34px;
+  text-align: center;
+}
+
+.stepperBtns{
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 18px;
+  height: 28px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+}
+
+
+
+.stepBtn{
+  flex: none;
+  min-width: auto;
+  width: auto;
+  border: none;
+  background: transparent;
+  color: var(--accent);
+  font-weight: 900;
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+}
+
+
+.stepBtn:hover{
+  background: rgba(255,255,255,0.05);
+}
+/* ===== Simple page layout fix (Timetable + Stats) ===== */
+
+#page-stats .main{
+  display:flex;
+  justify-content:center;
+  align-items: start;
+  min-height: auto;
+}
+/* ===== Timetable Layout Upgrade (Apple Clean) ===== */
+
+#page-timetable .main{
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  gap: 40px;
+  align-items: start;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding-top: 40px;
+}
+/* Prevent global button flex styles breaking timetable UI */
+#page-timetable button{
+  flex: none;
+  min-width: auto;
+}
+
+.ttInputCard,
+.ttPreviewCard{
+  background: var(--panel);
+  border-radius: 22px;
+  padding: 22px;
+  border: 1px solid var(--stroke);
+}
+
+.ttInputCard h2{
+  margin: 0 0 6px 0;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.ttSubtext{
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 20px;
+}
+
+.ttField{
+  margin-bottom: 14px;
+}
+
+.ttField label{
+  display:block;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  margin-bottom: 6px;
+  color: var(--muted);
+}
+
+.ttInputCard input{
+  width: 100%;
+  max-width: none;
+}
+/* ===== Segmented Time Picker ===== */
+
+.segTimeWrap{
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.segBox{
+  padding: 10px 16px;
+  border-radius: 14px;
+  background: var(--panel2);
+  border: 1px solid var(--stroke);
+  font-weight: 900;
+  cursor: pointer;
+  min-width: 52px;
+  text-align: center;
+}
+
+.segBox:hover{
+  background: var(--accent2);
+}
+
+.segBox.ampm{
+  min-width: 64px;
+}
+
+.segDivider{
+  font-weight: 900;
+  font-size: 16px;
+}
+
+.segDropdown{
+  position: absolute;
+  top: 120%;
+  left: 0;
+  background: var(--bg);
+  border: 1px solid var(--stroke);
+  border-radius: 16px;
+  padding: 8px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.35);
+  display: none;
+  max-height: 220px;
+  overflow-y: auto;
+  z-index: 50;
+  min-width: 120px;
+}
+
+.segDropdown.open{
+  display: block;
+}
+
+.segOption{
+  padding: 8px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.segOption:hover{
+  background: var(--accent2);
+}
+
+.ttPreviewTitle{
+  font-size: 14px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  color: var(--muted);
+  margin-bottom: 18px;
+}
+
+/* Apple-style timetable blocks */
+.ttBlock{
+  display:flex;
+  align-items:center;
+  gap: 16px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: var(--panel2);
+  margin-bottom: 12px;
+}
+.ttBlock.activeBlock{
+  outline: 2px solid var(--accent);
+  box-shadow: 0 0 20px var(--accent2);
+}
+
+.ttBlock.activeBlock{
+  border: 1px solid var(--accent);
+  background: var(--accent2);
+  transform: translateX(4px);
+}
+
+/* Break block styling */
+.ttBlock.break{
+  background: transparent;
+  border: 1px dashed var(--stroke);
+}
+
+.ttBlock.break .ttAccent{
+  background: var(--muted);
+  opacity: 0.5;
+}
+
+.ttBlock.break .ttSubject{
+  font-weight: 700;
+  color: var(--muted);
+}
+.ttBlock.break .ttSubject{
+  font-weight: 700;
+  color: var(--muted);
+}
+
+/*  ADD IT RIGHT HERE */
+#addSubjectBtn{
+#generateBtn,
+#clearTimetableBtn{
+  width: 100%;
+}
+
+  flex: none;
+  min-width: auto;
+  width: auto;
+  padding: 10px 16px;
+  border-radius: 14px;
+  margin-bottom: 12px;
+}
+#addSubjectBtn{
+  flex: none;
+  min-width: auto;
+  width: auto;
+  padding: 10px 16px;
+  border-radius: 14px;
+  margin-bottom: 12px;
+}
+
+#generateBtn{
+  width: 100%;
+  margin-top: 12px;
+}
+
+#clearTimetableBtn{
+  width: 100%;
+  margin-top: 8px;
+}
+
+.ttAccent{
+  width: 4px;
+  height: 36px;
+  border-radius: 4px;
+  background: var(--accent);
+}
+
+.ttBlockContent{
+  display:flex;
+  flex-direction:column;
+}
+
+.ttTime{
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.ttSubject{
+  font-size: 15px;
+  font-weight: 900;
+}
+
+  </style>
+</head>
+
+<body>
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="burger" id="burger" title="Menu">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M4 7H20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <path d="M4 12H20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <path d="M4 17H20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </div>
+
+    <div class="navTitle">Pages</div>
+
+    <!-- REAL pages -->
+    
+  </aside>
+
+  <!-- MAIN -->
+  <div class="wrap" id="app">
+
+    <!-- Header shared across pages -->
+    <header id="mainHeader">
+  <div class="leftHead">
+    <div class="titlePill">Optio</div>
+  </div>
+
+  <div></div>
+
+  <div class="rightHead">
+
+        <!-- Timer visuals tabs (hidden on non-timer pages via class) -->
+        <div class="styleTabs" id="timerTabs" aria-label="Timer visual style">
+  <button class="styleBtn active" type="button" data-style="ring" title="Progress ring">
+    <span class="mini"></span> Ring
+  </button>
+  <button class="styleBtn" type="button" data-style="flip" title="Sweep timer">
+    <span class="mini"></span> Sweep
+  </button>
+  <button class="styleBtn" type="button" data-style="water" title="Water level">
+    <span class="mini"></span> Water
+  </button>
+</div>
+
+      </div>
+    </header>
+
+    <!-- PAGE: TIMER -->
+    <section class="page active" id="page-timer">
+      <div class="main">
+        <!-- LEFT: visuals -->
+        <div class="visualWrap">
+          <!-- WATER -->
+          <div class="vis active" id="visWater">
+            <div class="stack visual">
+              <svg viewBox="0 0 220 220" aria-label="water level timer">
+                <defs>
+                  <clipPath id="clipCircle">
+                    <circle cx="110" cy="110" r="92"></circle>
+                  </clipPath>
+                </defs>
+
+                <circle cx="110" cy="110" r="92" fill="var(--bg)"></circle>
+
+                <g clip-path="url(#clipCircle)">
+                  <rect id="fillRect" x="0" y="220" width="220" height="0" fill="var(--accent)"></rect>
+                </g>
+
+                <text id="waterPct"
+                      x="110" y="110"
+                      text-anchor="middle"
+                      dy="0.35em"
+                      font-size="64"
+                      font-weight="950"
+                      fill="currentColor"
+                      opacity="0.92">0%</text>
+              </svg>
+
+              <div class="timeBelow" id="timeBelowBox">
+                <span id="timeText1">50:00</span>
+              </div>
+              <div class="phaseLabel" id="phaseLabel">Studying</div>
+
+            </div>
+          </div>
+
+          <!-- RING -->
+          <div class="vis" id="visRing">
+            <div class="stack visual">
+              <svg viewBox="0 0 220 220" aria-label="ring timer">
+                <circle cx="110" cy="110" r="92"
+                  fill="none" stroke="rgba(255,255,255,0.10)" stroke-width="16"></circle>
+                <circle id="ringProg" cx="110" cy="110" r="92"
+                  fill="none" stroke="var(--accent)" stroke-width="16"
+                  stroke-linecap="round"
+                  transform="rotate(-90 110 110)"></circle>
+                <circle cx="110" cy="110" r="74"
+                  fill="var(--bg)" opacity="0.96"></circle>
+              </svg>
+
+              <div class="timeText">
+                <div class="timeBig" id="timeText2">50:00</div>
+                 <div class="phaseLabel" id="phaseLabel2">Studying</div>
+                <div class="phaseSmall" id="phaseText2">Study</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- SWEEP -->
+          <div class="vis" id="visFlip">
+            <div class="flipWrap">
+              <div class="stack visual">
+                <svg viewBox="0 0 220 220" aria-label="sweep timer">
+                  <defs>
+                    <mask id="sweepMask">
+                      <rect x="0" y="0" width="220" height="220" fill="black"></rect>
+                      <path id="sweepWedge" d="" fill="white"></path>
+                    </mask>
+                  </defs>
+
+                  <circle cx="110" cy="110" r="90" fill="var(--accent)"></circle>
+                  <circle cx="110" cy="110" r="92" fill="var(--bg)" mask="url(#sweepMask)"></circle>
+
+                                  
+ </svg>
+
+                <div class="timeText">
+                  <div class="timeBig" id="timeText3">50:00</div>
+                   <div class="phaseLabel" id="phaseLabel3">Studying</div>
+                  <div class="phaseSmall" id="phaseText3">Study</div>
+                </div>
+              </div>
+
+              <div class="bar" aria-label="progress bar" style="display:none;">
+                <div class="barFill" id="barFill"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: controls -->
+        <div class="rightCol">
+  <div class="controlPanel">
+    <div class="controlTitle">CONTROL PANEL</div>
+
+    <div class="inputs" id="inputs">
+
+          <div class="pillRow">
+
+  <div class="pillGroup">
+    <label for="studyMin">Study</label>
+    <div class="stepperWrap">
+      <input id="studyMin" type="number" min="1" max="180" value="50">
+      <div class="stepperBtns">
+        <button type="button" class="stepBtn plus" data-target="studyMin">+</button>
+        <button type="button" class="stepBtn minus" data-target="studyMin">−</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="pillGroup">
+    <label for="breakMin">Break</label>
+    <div class="stepperWrap">
+      <input id="breakMin" type="number" min="1" max="60" value="10">
+      <div class="stepperBtns">
+        <button type="button" class="stepBtn plus" data-target="breakMin">+</button>
+        <button type="button" class="stepBtn minus" data-target="breakMin">−</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="pillGroup">
+    <label for="cycles">Cycles</label>
+    <div class="stepperWrap">
+      <input id="cycles" type="number" min="1" max="20" value="3">
+      <div class="stepperBtns">
+        <button type="button" class="stepBtn plus" data-target="cycles">+</button>
+        <button type="button" class="stepBtn minus" data-target="cycles">−</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+          </div>
+
+          <div class="controls">
+
+  <button class="primary" id="startBtn" type="button">
+    START SESSION
+  </button>
+
+  <div class="btnRow">
+    <button id="pauseBtn" type="button" disabled>Pause</button>
+    <button id="skipBtn" type="button" disabled>Skip</button>
+  </div>
+
+  <div class="btnRow" style="justify-content:center;">
+    <button id="resetBtn" type="button">Reset</button>
+  </div>
+
+</div>
+
+            <div class="skipHint" id="skipHint">Skip to break</div>
+          </div>
+
+          <div class="meta">
+            <span id="cycleInfo">Cycle: 0 / 3</span>
+            <span id="totals">Focus: 150m • Breaks: 20m</span>
+          </div>
+          </div> <!-- END controlPanel -->
+
+        </div>
+      </div>
+
+      <!-- Sound toggle (Timer page only) -->
+      <div class="soundFloating" id="soundFloating">
+
+<button class="themeMiniBtn" id="themeBtn" type="button" title="Change theme">
+  <span class="themeDot"></span>
+  <span class="themeText">Theme</span>
+</button>
+
+
+  <button class="soundToggleBtn on" id="soundToggle" type="button" aria-pressed="true">
+    Sound: On
+  </button>
+
+</div>
+
+    </section>
+
+    <!-- PAGE: TIMETABLE -->
+<section class="page" id="page-timetable">
+  <div class="main">
+
+    <!-- LEFT: INPUT PANEL -->
+    <div class="ttInputCard">
+      <h2>Timetable</h2>
+      <div class="ttSubtext">Add up to 6 subjects. We'll generate a study plan.</div>
+
+      <div id="subjectList"></div>
+
+      <button id="addSubjectBtn" type="button">+ Add Subject</button>
+
+      <div class="ttField">
+        <label>Start Time</label>
+     <div class="segTimeWrap" id="segTimeWrap">
+  <div class="segBox" data-type="hour">
+    <span id="segHour">09</span>
+  </div>
+
+  <div class="segDivider">:</div>
+
+  <div class="segBox" data-type="minute">
+    <span id="segMinute">00</span>
+  </div>
+
+  <div class="segBox ampm" data-type="ampm">
+    <span id="segAmPm">AM</span>
+  </div>
+
+  <div class="segDropdown" id="segDropdown"></div>
+</div>
+
+
+      </div>
+
+      <div class="ttField">
+        <label>Total Study Time (hours)</label>
+        <input type="number" id="totalHours" min="1" max="12" value="3">
+      </div>
+
+<div class="ttField">
+  <label>Break Length (minutes)</label>
+  <input type="number" id="breakMinutes" min="0" max="60" value="10">
+</div>
+
+      <button id="generateBtn" class="primary">
+        Generate Timetable
+      </button>
+<button id="startScheduleBtn" class="primary" style="margin-top:10px;">
+  Start Schedule
+</button>
+
+      <button id="clearTimetableBtn" style="margin-top:10px;">
+        Clear Timetable
+      </button>
+    </div>
+
+    <!-- RIGHT: PREVIEW PANEL -->
+    <div class="ttPreviewCard">
+      <div class="ttPreviewTitle">GENERATED SCHEDULE</div>
+      <div id="timetableGrid"></div>
+    </div>
+
+  </div>
+</section>
+
+
+
+   <!-- Center Nav Overlay -->
+<div class="navOverlay" id="navOverlay">
+  <div class="navOverlayCard">
+
+    <div class="navOverlayTitle">Pages</div>
+
+    <button class="navOverlayBtn" type="button" data-navto="timer">
+      <span class="navOverlayDot"></span>
+      Timer
+    </button>
+
+    <button class="navOverlayBtn" type="button" data-navto="timetable">
+      <span class="navOverlayDot"></span>
+      Timetable
+    </button>
+
+  </div>
+</div>
+ 
+
+  <!-- Theme Drawer -->
+<div class="themeDrawer" id="themeDrawer">
+  <div class="themeDrawerContent">
+    <div class="themeDrawerTitle">Choose Theme</div>
+
+    <button class="themeOption" data-theme="dark">Midnight</button>
+    <button class="themeOption" data-theme="light">Light</button>
+    <button class="themeOption" data-theme="forest">Forest</button>
+    <button class="themeOption" data-theme="espresso">Espresso</button>
+  </div>
+</div>
+
+<div class="themeOverlay" id="themeOverlay"></div>
+
+  <!-- Completion overlay -->
+ <!-- Schedule Start Popup -->
+<div id="schedulePopupOverlay" class="schedulePopupOverlay">
+  <div class="schedulePopupCard">
+    <div class="schedulePopupTitle">📚 Study Session Started</div>
+    <div class="schedulePopupSub">Your schedule is now running</div>
+  </div>
+</div>
+ 
+<script>
+  // ========= Sidebar =========
+  const sidebar = document.getElementById("sidebar");
+  const navOverlay = document.getElementById("navOverlay");
+const navOverlayBtns = document.querySelectorAll(".navOverlayBtn");
+
+function openNavOverlay(){
+  navOverlay.classList.add("show");
+}
+
+function closeNavOverlay(){
+  navOverlay.classList.remove("show");
+}
+
+  const burger = document.getElementById("burger");
+  burger.addEventListener("click", () => {
+  openNavOverlay();
+});
+
+  // Click outside closes overlay
+navOverlay.addEventListener("click", (e)=>{
+  if (!e.target.closest(".navOverlayCard")){
+    closeNavOverlay();
+  }
+});
+
+// Switch pages from overlay
+navOverlayBtns.forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    setActivePage(btn.dataset.navto);
+    closeNavOverlay();
+  });
+});
+
+
+  // ========= Pages =========
+  const pages = {
+  timer: document.getElementById('page-timer'),
+  timetable: document.getElementById('page-timetable'),
+};
+
+  const wrap = document.getElementById('app');
+  const soundFloating = document.getElementById('soundFloating');
+
+  function setActivePage(name){
+    Object.keys(pages).forEach(k => pages[k].classList.toggle('active', k === name));
+    
+    if (name === 'timer') {
+  wrap.classList.remove('hideTimerTabs');
+} else {
+  wrap.classList.add('hideTimerTabs');
+}
+
+// Show floating theme/sound on Timer AND Timetable
+if (name === 'timer' || name === 'timetable') {
+  soundFloating.style.display = 'flex';
+} else {
+  soundFloating.style.display = 'none';
+}
+
+      window.scrollTo(0,0);
+  }
+
+  
+  // ========= Helpers =========
+  const pad2 = (n) => String(n).padStart(2,"0");
+  const clamp = (n,a,b) => Math.max(a, Math.min(b,n));
+
+  // ========= Elements =========
+  const themeBtn = document.getElementById("themeBtn");
+  const themeDrawer = document.getElementById("themeDrawer");
+const themeOverlay = document.getElementById("themeOverlay");
+const themeOptions = document.querySelectorAll(".themeOption");
+
+  
+  
+  
+
+  const styleBtns = Array.from(document.querySelectorAll(".styleBtn"));
+  const visWater = document.getElementById("visWater");
+  const visRing  = document.getElementById("visRing");
+  const visFlip  = document.getElementById("visFlip");
+
+  const studyMinEl = document.getElementById("studyMin");
+  const breakMinEl = document.getElementById("breakMin");
+  const cyclesEl   = document.getElementById("cycles");
+
+  const startBtn = document.getElementById("startBtn");
+  const pauseBtn = document.getElementById("pauseBtn");
+  const resetBtn = document.getElementById("resetBtn");
+  const skipBtn  = document.getElementById("skipBtn");
+  const skipHint = document.getElementById("skipHint");
+
+  const cycleInfoEl = document.getElementById("cycleInfo");
+  const totalsEl = document.getElementById("totals");
+  const summaryText = document.getElementById("summaryText");
+
+
+  const soundToggle = document.getElementById("soundToggle");
+
+  // Visual text
+  const timeText1 = document.getElementById("timeText1");
+  const timeText2 = document.getElementById("timeText2");
+  const timeText3 = document.getElementById("timeText3");
+  const phaseLabel = document.getElementById("phaseLabel");
+  const phaseLabel2 = document.getElementById("phaseLabel2");
+  const phaseLabel3 = document.getElementById("phaseLabel3");
+  const barFill = document.getElementById("barFill");
+
+  // Water / Ring parts
+  const ringProg = document.getElementById("ringProg");
+  const fillRect = document.getElementById("fillRect");
+  const waterPct = document.getElementById("waterPct");
+
+  // Sweep parts
+  const sweepWedge = document.getElementById("sweepWedge");
+  const sweepSuccess = document.getElementById("sweepSuccess");
+
+  // ========= Theme cycle =========
+  const THEME_KEY = "sc_theme_v2";
+  const themes = ["dark","light","forest","espresso"];
+
+
+
+  function applyTheme(t){
+    document.documentElement.setAttribute("data-theme", t);
+    localStorage.setItem(THEME_KEY, t);
+    document.querySelectorAll('.themeOption').forEach(btn=>{
+  btn.classList.toggle('active', btn.dataset.theme === t);
+});
+
+
+    
+  }
+
+  const saved = localStorage.getItem(THEME_KEY);
+  applyTheme(themes.includes(saved) ? saved : "dark");
+
+  // ===== Theme Drawer Logic =====
+
+themeBtn.addEventListener("click", () => {
+  themeDrawer.classList.add("open");
+  themeOverlay.classList.add("show");
+});
+
+themeOverlay.addEventListener("click", () => {
+  themeDrawer.classList.remove("open");
+  themeOverlay.classList.remove("show");
+});
+
+themeOptions.forEach(option => {
+  option.addEventListener("click", () => {
+    const selected = option.dataset.theme;
+    applyTheme(selected);
+    themeDrawer.classList.remove("open");
+    themeOverlay.classList.remove("show");
+  });
+});
+
+
+
+  // ========= Visual style switching =========
+  let activeStyle = "water";
+  function setStyle(style){
+    activeStyle = style;
+    styleBtns.forEach(b => b.classList.toggle("active", b.dataset.style === style));
+    visWater.classList.toggle("active", style === "water");
+    visRing.classList.toggle("active", style === "ring");
+    visFlip.classList.toggle("active", style === "flip");
+    updateUI(performance.now());
+  }
+  styleBtns.forEach(btn => btn.addEventListener("click", () => setStyle(btn.dataset.style)));
+
+  // ========= Timer state =========
+  let phase = "study";
+  let totalCycles = 3;
+  let completedStudies = 0;
+
+  let remainingMs = 50 * 60 * 1000;
+  let phaseTotalMs = remainingMs;
+
+  let running = false;
+  let rafId = null;
+  let endTime = null;
+ 
+  // ===== Schedule Mode =====
+let scheduleMode = false;
+let scheduleBlocks = [];
+let scheduleIndex = 0;
+const schedulePopupOverlay = document.getElementById("schedulePopupOverlay");
+
+function showSchedulePopup(){
+  if (!schedulePopupOverlay) return;
+
+  schedulePopupOverlay.classList.add("show");
+
+  setTimeout(() => {
+    schedulePopupOverlay.classList.remove("show");
+  }, 4000); // 4 seconds
+}
+
+
+function loadScheduleBlock(){
+
+  if (scheduleIndex >= scheduleBlocks.length){
+    scheduleMode = false;
+    document.getElementById("inputs").style.display = "grid";
+    completeSession();
+    return;
+  }
+
+  const block = scheduleBlocks[scheduleIndex];
+
+  phase = block.type;
+  remainingMs = block.duration;
+  phaseTotalMs = block.duration;
+
+  highlightScheduleBlock(scheduleIndex);
+
+  updateUI(performance.now());
+  startLoop();
+}
+
+  // Success flash timer (brief green + tick)
+  
+  // ========= Sound =========
+  let soundOn = true;
+
+  function setSoundUI(){
+    soundToggle.classList.toggle("on", soundOn);
+    soundToggle.classList.toggle("off", !soundOn);
+    soundToggle.textContent = `Sound: ${soundOn ? "On" : "Off"}`;
+    soundToggle.setAttribute("aria-pressed", String(soundOn));
+  }
+  setSoundUI();
+
+  soundToggle.addEventListener("click", () => {
+    soundOn = !soundOn;
+    setSoundUI();
+  });
+
+  // Device volume only (no slider)
+  function beepSeries({ seconds = 0.8, pattern = "down" }){
+    if (!soundOn) return;
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return;
+
+    const ctx = new AC();
+    const t0 = ctx.currentTime;
+
+    const freqs = (pattern === "down")
+  ? [1200, 900, 700]
+  : [700, 900, 1200];
+
+    const seg = Math.max(0.16, seconds / freqs.length);
+
+    freqs.forEach((f, i) => {
+      const start = t0 + i * seg;
+
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(f, start);
+
+      const v = 0.38; // fixed gain; actual loudness controlled by device volume
+      gain.gain.setValueAtTime(0.0001, start);
+      gain.gain.linearRampToValueAtTime(v, start + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + seg);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(start);
+      osc.stop(start + seg);
+    });
+
+    const end = t0 + freqs.length * seg + 0.2;
+    setTimeout(() => ctx.close(), Math.ceil((end - t0) * 1000));
+  }
+
+  const soundStudyToBreak = () => beepSeries({seconds:0.7, pattern:"down"});
+  const soundBreakToStudy = () => beepSeries({seconds:0.7, pattern:"up"});
+
+  // ========= Settings =========
+  function readSettings(){
+    const s = clamp(parseInt(studyMinEl.value || "50", 10), 1, 180);
+    const b = clamp(parseInt(breakMinEl.value || "10", 10), 1, 60);
+    totalCycles = clamp(parseInt(cyclesEl.value || "3", 10), 1, 20);
+
+    const focus = s * totalCycles;
+    const breaks = b * Math.max(0, totalCycles - 1);
+    totalsEl.textContent = `Focus: ${focus}m • Breaks: ${breaks}m`;
+    if (summaryText){
+  summaryText.textContent =
+    `Study ${s} | Break ${b} | Cycles ${totalCycles}`;
+}
+
+
+    return { s, b, totalCycles };
+  }
+
+  const R = 92;
+  const C = 2 * Math.PI * R;
+  ringProg.style.strokeDasharray = C.toFixed(2);
+
+  function formatTime(ms){
+    const sec = Math.max(0, Math.ceil(ms / 1000));
+    const m = Math.floor(sec / 60);
+    const s = sec % 60;
+    return `${pad2(m)}:${pad2(s)}`;
+  }
+
+  function updateSkipLabel(){
+    if (phase === "study") skipHint.textContent = "Skip to break";
+    else if (phase === "break") skipHint.textContent = "Skip to study session";
+    else skipHint.textContent = "Session complete";
+  }
+
+  function stopLoop(){
+    if (rafId) cancelAnimationFrame(rafId);
+    rafId = null;
+    endTime = null;
+  }
+
+  // Sweep wedge
+  function setSweepWedge(fracDone){
+    if (!sweepWedge) return;
+    const cx = 110, cy = 110, r = 92;
+
+    if (fracDone >= 0.999999){
+      const dFull = [
+        `M ${cx} ${cy - r}`,
+        `A ${r} ${r} 0 1 1 ${cx} ${cy + r}`,
+        `A ${r} ${r} 0 1 1 ${cx} ${cy - r}`,
+        "Z"
+      ].join(" ");
+      sweepWedge.setAttribute("d", dFull);
+      return;
+    }
+
+    if (fracDone <= 0.000001){
+      sweepWedge.setAttribute("d", "");
+      return;
+    }
+
+    const startAng = -Math.PI / 2;
+    const endAng = startAng + (Math.PI * 2 * fracDone);
+
+    const x1 = cx + r * Math.cos(startAng);
+    const y1 = cy + r * Math.sin(startAng);
+    const x2 = cx + r * Math.cos(endAng);
+    const y2 = cy + r * Math.sin(endAng);
+
+    const largeArc = fracDone > 0.5 ? 1 : 0;
+
+    const d = [
+      `M ${cx} ${cy}`,
+      `L ${x1.toFixed(3)} ${y1.toFixed(3)}`,
+      `A ${r} ${r} 0 ${largeArc} 1 ${x2.toFixed(3)} ${y2.toFixed(3)}`,
+      "Z"
+    ].join(" ");
+
+    sweepWedge.setAttribute("d", d);
+  }
+
+
+
+  function loop(now){
+    if (!running || endTime === null) return;
+
+    remainingMs = Math.max(0, endTime - now);
+
+    if (remainingMs <= 0){
+      remainingMs = 0;
+      
+      updateUI(now);
+      running = false;
+      stopLoop();
+      nextPhase(true);
+      return;
+    }
+
+    updateUI(now);
+    rafId = requestAnimationFrame(loop);
+  }
+
+  function startLoop(){
+    if (phase === "done") return;
+    if (running) return;
+
+    running = true;
+    endTime = performance.now() + remainingMs;
+    updateUI(performance.now());
+    rafId = requestAnimationFrame(loop);
+  }
+
+  function pauseOrResume(){
+    if (phase === "done") return;
+
+    if (running){
+      running = false;
+      remainingMs = Math.max(0, endTime - performance.now());
+      stopLoop();
+      updateUI(performance.now());
+    } else {
+      startLoop();
+    }
+  }
+
+  function updateUI(now){
+    document.body.classList.toggle("running", running);
+    
+     if (phaseLabel){
+    if (phase === "study") phaseLabel.textContent = "Studying";
+    else if (phase === "break") phaseLabel.textContent = "Break time";
+    else if (phase === "done") phaseLabel.textContent = "Session completed";
+  }
+
+// Ring + Sweep visible phase labels
+if (phaseLabel2){
+  if (phase === "study") phaseLabel2.textContent = "Studying";
+  else if (phase === "break") phaseLabel2.textContent = "Break time";
+  else if (phase === "done") phaseLabel2.textContent = "Session completed";
+}
+
+if (phaseLabel3){
+  if (phase === "study") phaseLabel3.textContent = "Studying";
+  else if (phase === "break") phaseLabel3.textContent = "Break time";
+  else if (phase === "done") phaseLabel3.textContent = "Session completed";
+}
+
+
+    
+    const t = formatTime(remainingMs);
+    timeText1.textContent = t;
+    timeText2.textContent = t;
+    if (timeText3) timeText3.textContent = t;
+
+    cycleInfoEl.textContent = `Cycle: ${completedStudies} / ${totalCycles}`;
+
+    const fracRemain = phaseTotalMs > 0 ? (remainingMs / phaseTotalMs) : 0;
+const linearFracDone = 1 - fracRemain;
+
+// Visual easing curve (makes early movement visible)
+const fracDone = Math.pow(linearFracDone, 0.9);
+
+
+    const pct = Math.round(fracDone * 100);
+    if (waterPct) waterPct.textContent = `${pct}%`;
+
+    const h = 220 * fracDone;
+    const y = 220 - h;
+    if (fillRect){
+      fillRect.setAttribute("y", String(y));
+      fillRect.setAttribute("height", String(h));
+    }
+
+    ringProg.style.strokeDashoffset = (C * fracDone).toFixed(2);
+
+    if (barFill) barFill.style.width = `${Math.max(0, Math.min(1, fracRemain)) * 100}%`;
+
+    setSweepWedge(fracDone);
+
+
+    startBtn.disabled = running || phase === "done";
+    pauseBtn.disabled = (phase === "done");
+    pauseBtn.textContent = running ? "Pause" : "Resume";
+    skipBtn.disabled = (phase === "done");
+    updateSkipLabel();
+    setSoundUI();
+  }
+
+  function setPhase(newPhase, totalMs){
+    phase = newPhase;
+    remainingMs = totalMs;
+    phaseTotalMs = totalMs;
+    updateUI(performance.now());
+
+  }
+
+  function completeSession(){
+    phase = "done";
+    running = false;
+    stopLoop();
+    updateUI(performance.now());
+  }
+
+  function nextPhase(autoStart=true){
+  if (scheduleMode){
+  scheduleIndex++;
+  loadScheduleBlock();
+  return;
+}
+
+    const { s, b } = readSettings();
+
+    if (phase === "study"){
+      completedStudies += 1;
+
+      if (completedStudies >= totalCycles){
+        completeSession();
+        return;
+      }
+
+
+      soundStudyToBreak();
+      setPhase("break", b * 60 * 1000);
+      if (autoStart) startLoop();
+      return;
+    }
+
+    if (phase === "break"){
+      soundBreakToStudy();
+      setPhase("study", s * 60 * 1000);
+      if (autoStart) startLoop();
+      return;
+    }
+  }
+
+  function resetAll(){
+    running = false;
+    stopLoop();
+    successUntil = 0;
+    const { s } = readSettings();
+    completedStudies = 0;
+    setPhase("study", s * 60 * 1000);
+  }
+
+  function skipPhase(){
+    if (phase === "done") return;
+    running = false;
+    stopLoop();
+    remainingMs = 0;
+    updateUI(performance.now());
+    nextPhase(true);
+  }
+
+  // ========= Events =========
+  startBtn.addEventListener("click", () => {
+    if (phase === "done") return;
+    startLoop();
+  });
+
+  pauseBtn.addEventListener("click", () => pauseOrResume());
+  resetBtn.addEventListener("click", () => resetAll());
+  skipBtn.addEventListener("click", () => skipPhase());
+
+  [studyMinEl, breakMinEl, cyclesEl].forEach(el => {
+    el.addEventListener("change", () => {
+      const { s } = readSettings();
+      if (!running && phase === "study" && completedStudies === 0){
+        remainingMs = s * 60 * 1000;
+        phaseTotalMs = remainingMs;
+      }
+      updateUI(performance.now());
+    });
+  });
+
+// ===== Stepper buttons =====
+const stepButtons = document.querySelectorAll('.stepBtn');
+
+stepButtons.forEach(btn => {
+  btn.addEventListener('click', () => {
+    const targetId = btn.dataset.target;
+    const input = document.getElementById(targetId);
+    if (!input) return;
+
+    const min = parseInt(input.min) || 0;
+    const max = parseInt(input.max) || 9999;
+    let value = parseInt(input.value) || 0;
+
+  // Decide step size
+let step = 1;
+
+if (targetId === "studyMin" || targetId === "breakMin") {
+  step = 5;
+}
+
+if (btn.classList.contains('plus')) {
+  value += step;
+}
+
+if (btn.classList.contains('minus')) {
+  value -= step;
+}
+
+
+    value = Math.max(min, Math.min(max, value));
+    input.value = value;
+
+    input.dispatchEvent(new Event('change'));
+  });
+});
+// ========= Timetable: Subjects (Step 1) =========
+const subjectList = document.getElementById("subjectList");
+const addSubjectBtn = document.getElementById("addSubjectBtn");
+const subjectCountHint = document.getElementById("subjectCountHint");
+
+let subjects = [];
+
+function saveSubjects(){
+  localStorage.setItem("optio_subjects_v1", JSON.stringify(subjects));
+}
+
+function loadSubjects(){
+  try{
+    const raw = localStorage.getItem("optio_subjects_v1");
+    const arr = raw ? JSON.parse(raw) : [];
+    subjects = Array.isArray(arr) ? arr.slice(0,6) : [];
+  }catch(e){
+    subjects = [];
+  }
+}
+
+function renderSubjects(){
+  if (!subjectList) return;
+
+  subjectList.innerHTML = "";
+
+  subjects.forEach((val, idx) => {
+    const row = document.createElement("div");
+    row.className = "subjectRow";
+
+    const input = document.createElement("input");
+    input.type = "text";
+    input.placeholder = `Subject ${idx + 1}`;
+    input.value = val || "";
+
+    input.addEventListener("input", () => {
+      subjects[idx] = input.value;
+      saveSubjects();
+    });
+
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.className = "removeSubjectBtn";
+    remove.textContent = "×";
+
+    remove.addEventListener("click", () => {
+      subjects.splice(idx, 1);
+      saveSubjects();
+      renderSubjects();
+          });
+
+  
+
+    row.appendChild(input);
+    row.appendChild(remove);
+    subjectList.appendChild(row);
+  });
+
+  if (subjectCountHint){
+    subjectCountHint.textContent = `${subjects.length} / 6`;
+  }
+
+  if (addSubjectBtn){
+    addSubjectBtn.disabled = subjects.length >= 6;
+    addSubjectBtn.style.opacity = addSubjectBtn.disabled ? "0.6" : "1";
+  }
+}
+
+if (addSubjectBtn){
+  addSubjectBtn.addEventListener("click", () => {
+    if (subjects.length >= 6) return;
+    subjects.push("");
+    saveSubjects();
+    renderSubjects();
+  });
+}
+
+loadSubjects();
+renderSubjects();
+
+// ========= Timetable: Generate =========
+const generateBtn = document.getElementById("generateBtn");
+const clearTimetableBtn = document.getElementById("clearTimetableBtn");
+const timetableGrid = document.getElementById("timetableGrid");
+const totalHoursInput = document.getElementById("totalHours");
+const breakMinutesInput = document.getElementById("breakMinutes");
+
+// ===== Segmented Time Picker Logic =====
+const segHour = document.getElementById("segHour");
+const segMinute = document.getElementById("segMinute");
+const segAmPm = document.getElementById("segAmPm");
+const segDropdown = document.getElementById("segDropdown");
+const segWrap = document.getElementById("segTimeWrap");
+
+let activeSeg = null;
+
+function openSeg(type){
+  activeSeg = type;
+  segDropdown.innerHTML = "";
+  segDropdown.classList.add("open");
+
+  if (type === "hour"){
+    for (let h = 1; h <= 12; h++){
+      const option = document.createElement("div");
+      option.className = "segOption";
+      option.textContent = String(h).padStart(2,"0");
+      option.addEventListener("click", ()=>{
+        segHour.textContent = option.textContent;
+        closeSeg();
+      });
+      segDropdown.appendChild(option);
+    }
+  }
+
+  if (type === "minute"){
+    for (let m = 0; m < 60; m += 10){
+      const option = document.createElement("div");
+      option.className = "segOption";
+      option.textContent = String(m).padStart(2,"0");
+      option.addEventListener("click", ()=>{
+        segMinute.textContent = option.textContent;
+        closeSeg();
+      });
+      segDropdown.appendChild(option);
+    }
+  }
+
+  if (type === "ampm"){
+    ["AM","PM"].forEach(val=>{
+      const option = document.createElement("div");
+      option.className = "segOption";
+      option.textContent = val;
+      option.addEventListener("click", ()=>{
+        segAmPm.textContent = val;
+        closeSeg();
+      });
+      segDropdown.appendChild(option);
+    });
+  }
+}
+
+function closeSeg(){
+  segDropdown.classList.remove("open");
+  activeSeg = null;
+}
+
+segWrap.addEventListener("click",(e)=>{
+  const box = e.target.closest(".segBox");
+  if (!box) return;
+  openSeg(box.dataset.type);
+});
+
+document.addEventListener("click",(e)=>{
+  if (!e.target.closest(".segTimeWrap")){
+    closeSeg();
+  }
+});
+
+function getStartTime24(){
+  let hour = parseInt(segHour.textContent);
+  const minute = parseInt(segMinute.textContent);
+  const ampm = segAmPm.textContent;
+
+  if (ampm === "PM" && hour !== 12) hour += 12;
+  if (ampm === "AM" && hour === 12) hour = 0;
+
+  return { hour, minute };
+}
+
+
+
+
+
+function generateTimetable(){
+  if (!subjects.length) return;
+
+  
+  const totalHours = parseFloat(totalHoursInput.value);
+
+  if (!totalHours) return;
+
+  timetableGrid.innerHTML = "";
+
+  const { hour, minute } = getStartTime24();
+let currentMinutes = hour * 60 + minute;
+
+
+  const totalMinutes = totalHours * 60;
+  const blockMinutes = Math.floor(totalMinutes / subjects.length);
+
+const breakMinutes = parseInt(breakMinutesInput.value) || 0;
+const studyBlockMinutes = Math.floor(
+  (totalMinutes - (breakMinutes * (subjects.length - 1))) 
+  / subjects.length
+);
+
+subjects.forEach((subject, index) => {
+  if (!subject.trim()) return;
+
+  // Study Block
+  const studyEnd = currentMinutes + studyBlockMinutes;
+
+  const studyRow = document.createElement("div");
+  studyRow.className = "ttBlock";
+studyRow.dataset.type = "study";
+studyRow.dataset.index = index;
+
+
+  studyRow.innerHTML = `
+    <div class="ttAccent"></div>
+    <div class="ttBlockContent">
+      <div class="ttTime">${formatMinutes(currentMinutes)} - ${formatMinutes(studyEnd)}</div>
+      <div class="ttSubject">${subject}</div>
+    </div>
+  `;
+
+  timetableGrid.appendChild(studyRow);
+
+  currentMinutes = studyEnd;
+
+  // Break Block (not after last subject)
+  if (breakMinutes > 0 && index < subjects.length - 1) {
+    const breakEnd = currentMinutes + breakMinutes;
+
+    const breakRow = document.createElement("div");
+breakRow.className = "ttBlock break";
+breakRow.dataset.type = "break";
+breakRow.dataset.index = index;
+
+breakRow.innerHTML = `
+  <div class="ttAccent"></div>
+  <div class="ttBlockContent">
+    <div class="ttTime">${formatMinutes(currentMinutes)} - ${formatMinutes(breakEnd)}</div>
+    <div class="ttSubject">Break</div>
+  </div>
+`;
+
+
+    timetableGrid.appendChild(breakRow);
+
+    currentMinutes = breakEnd;
+  }
+});
+
+}
+function highlightScheduleBlock(index){
+  const rows = timetableGrid.querySelectorAll(".ttBlock");
+  rows.forEach((row, i) => {
+    row.classList.toggle("activeBlock", i === index);
+  });
+}
+
+function formatMinutes(total){
+  const h = Math.floor(total / 60);
+  const m = total % 60;
+  return `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`;
+}
+
+
+
+
+
+generateBtn.addEventListener("click", generateTimetable);
+
+const startScheduleBtn = document.getElementById("startScheduleBtn");
+
+startScheduleBtn.addEventListener("click", () => {
+
+  if (!timetableGrid.children.length) return;
+
+  scheduleBlocks = [];
+  scheduleIndex = 0;
+
+  const rows = timetableGrid.querySelectorAll(".ttBlock");
+
+  rows.forEach(row => {
+    const timeText = row.querySelector(".ttTime").textContent;
+    const subjectText = row.querySelector(".ttSubject").textContent;
+
+    const [start, end] = timeText.split(" - ");
+    const [sh, sm] = start.split(":").map(Number);
+    const [eh, em] = end.split(":").map(Number);
+
+    const duration = ((eh * 60 + em) - (sh * 60 + sm)) * 60000;
+
+    scheduleBlocks.push({
+      type: subjectText === "Break" ? "break" : "study",
+      subject: subjectText,
+      duration: duration
+    });
+  });
+
+  if (!scheduleBlocks.length) return;
+
+  scheduleMode = true;
+
+  document.getElementById("inputs").style.display = "none";
+ 
+ setActivePage("timer");
+ showSchedulePopup();
+ loadScheduleBlock();
+
+});
+
+
+// ========= Clear =========
+clearTimetableBtn.addEventListener("click", () => {
+  timetableGrid.innerHTML = "";
+  subjects = [];
+  localStorage.removeItem("optio_subjects_v1");
+  renderSubjects();
+});
+
+
+
+   
+
+  // Init
+  readSettings();
+  resetAll();
+  setStyle("ring");
+  setActivePage("timer");
+</script>
+
+</body>
+</html>
