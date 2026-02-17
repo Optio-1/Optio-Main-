@@ -1288,6 +1288,52 @@ body.running #visFlip .timeBig{
   font-size: 15px;
   font-weight: 900;
 }
+/* =========================
+   MOBILE RESPONSIVE FIX
+========================= */
+
+@media (max-width: 900px){
+:root{
+  --ringSize: 420px;
+  --ringSizeRun: 480px;
+}
+
+  .main{
+    grid-template-columns: 1fr !important;
+    gap: 30px;
+  }
+
+  .visual{
+    width: min(420px, 90vw);
+  }
+
+  body.running .visual{
+    width: min(480px, 95vw);
+  }
+
+  .rightCol{
+    max-width: 100%;
+    justify-self: center;
+    margin-top: 0;
+  }
+
+  .ttInputCard,
+  .ttPreviewCard{
+    width: 100%;
+  }
+
+  #page-timetable .main{
+    grid-template-columns: 1fr !important;
+    gap: 30px;
+    padding-top: 20px;
+  }
+
+  .titlePill{
+    left: 72px;
+    font-size: 18px;
+  }
+
+}
 
   </style>
 </head>
