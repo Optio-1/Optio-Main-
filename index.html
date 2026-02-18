@@ -852,6 +852,47 @@ body.running #visFlip .timeBig{
 }
 
 .subjectRow input{
+.subjectColorDot{
+  width: 10px;
+  height: 10px;
+  border-radius: 99px;
+  background: var(--accent);
+  box-shadow: 0 0 0 4px var(--accent2);
+  flex: 0 0 auto;
+}
+
+.ttMetaRow{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 16px;
+  border: 1px solid var(--stroke);
+  background: var(--panel2);
+  margin-bottom: 14px;
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.ttMetaRow b{
+  color: var(--text);
+  font-weight: 900;
+}
+
+.ttInlinePill{
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--stroke);
+  background: var(--panel);
+  color: var(--text);
+  font-weight: 900;
+  font-size: 11px;
+  letter-spacing: 0.6px;
+  white-space: nowrap;
+}
+
   max-width: none;
   flex: 1;
 }
@@ -1254,24 +1295,9 @@ body.running #visFlip .timeBig{
   color: var(--muted);
 }
 
-/*  ADD IT RIGHT HERE */
+/* Timetable buttons */
 #addSubjectBtn{
-#generateBtn,
-#clearTimetableBtn{
   width: 100%;
-}
-
-  flex: none;
-  min-width: auto;
-  width: auto;
-  padding: 10px 16px;
-  border-radius: 14px;
-  margin-bottom: 12px;
-}
-#addSubjectBtn{
-  flex: none;
-  min-width: auto;
-  width: auto;
   padding: 10px 16px;
   border-radius: 14px;
   margin-bottom: 12px;
@@ -1282,11 +1308,28 @@ body.running #visFlip .timeBig{
   margin-top: 12px;
 }
 
+#startScheduleBtn{
+  width: 100%;
+  margin-top: 10px;
+  background: var(--accent);
+  color: #fff;
+  border-color: rgba(255,255,255,0.12);
+}
+
+[data-theme="light"] #startScheduleBtn{
+  color: #fff;
+}
+
+#startScheduleBtn:disabled{
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
 #clearTimetableBtn{
   width: 100%;
   margin-top: 8px;
 }
-
 .ttAccent{
   width: 4px;
   height: 36px;
@@ -1635,6 +1678,9 @@ button:active{
     <div class="ttInputCard">
       <h2>Timetable</h2>
       <div class="ttSubtext">Add up to 6 subjects. We'll generate a study plan.</div>
+      <div class="ttMetaRow" id="ttMetaRow">
+      </div>
+
 
       <div id="subjectList"></div>
 
@@ -1673,9 +1719,7 @@ button:active{
   <input type="number" id="breakMinutes" min="0" max="60" value="10">
 </div>
 
-      <button id="generateBtn" class="primary">
-        Generate Timetable
-      </button>
+     
 <button id="startScheduleBtn" class="primary" style="margin-top:10px;">
   Start Schedule
 </button>
@@ -1687,7 +1731,11 @@ button:active{
 
     <!-- RIGHT: PREVIEW PANEL -->
     <div class="ttPreviewCard">
-      <div class="ttPreviewTitle">GENERATED SCHEDULE</div>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;">
+  <div class="ttPreviewTitle">GENERATED SCHEDULE</div>
+  <div id="ttTopMeta" style="font-size:12px; font-weight:800; color:var(--muted);"></div>
+</div>
+
       <div id="timetableGrid"></div>
     </div>
 
@@ -2340,6 +2388,20 @@ const subjectCountHint = document.getElementById("subjectCountHint");
 
 let subjects = [];
 
+const SUBJECT_COLORS = [
+  "#7a3cff", // purple
+  "#2dd4bf", // teal
+  "#ff9f2d", // orange
+  "#60a5fa", // blue
+  "#34d399", // green
+  "#f472b6"  // pink
+];
+
+function getSubjectColor(i){
+  return SUBJECT_COLORS[i % SUBJECT_COLORS.length];
+}
+
+
 function saveSubjects(){
   localStorage.setItem("optio_subjects_v1", JSON.stringify(subjects));
 }
@@ -2352,6 +2414,11 @@ function loadSubjects(){
   }catch(e){
     subjects = [];
   }
+
+  // First-time UX: show 3 empty rows by default
+  if (!subjects.length){
+    subjects = ["", "", ""];
+  }
 }
 
 function renderSubjects(){
@@ -2363,6 +2430,12 @@ function renderSubjects(){
     const row = document.createElement("div");
     row.className = "subjectRow";
 
+    const dot = document.createElement("div");
+    dot.className = "subjectColorDot";
+    const c = getSubjectColor(idx);
+    dot.style.background = c;
+    dot.style.boxShadow = `0 0 0 4px ${c}22`;
+
     const input = document.createElement("input");
     input.type = "text";
     input.placeholder = `Subject ${idx + 1}`;
@@ -2371,6 +2444,7 @@ function renderSubjects(){
     input.addEventListener("input", () => {
       subjects[idx] = input.value;
       saveSubjects();
+      generateTimetable();
     });
 
     const remove = document.createElement("button");
@@ -2382,10 +2456,12 @@ function renderSubjects(){
       subjects.splice(idx, 1);
       saveSubjects();
       renderSubjects();
+      generateTimetable();
           });
 
   
 
+    row.appendChild(dot);
     row.appendChild(input);
     row.appendChild(remove);
     subjectList.appendChild(row);
@@ -2407,6 +2483,7 @@ if (addSubjectBtn){
     subjects.push("");
     saveSubjects();
     renderSubjects();
+    generateTimetable();
   });
 }
 
@@ -2414,11 +2491,20 @@ loadSubjects();
 renderSubjects();
 
 // ========= Timetable: Generate =========
-const generateBtn = document.getElementById("generateBtn");
 const clearTimetableBtn = document.getElementById("clearTimetableBtn");
 const timetableGrid = document.getElementById("timetableGrid");
 const totalHoursInput = document.getElementById("totalHours");
 const breakMinutesInput = document.getElementById("breakMinutes");
+
+// Live preview updates
+[totalHoursInput, breakMinutesInput].forEach(el=>{
+  if (!el) return;
+  el.addEventListener("input", generateTimetable);
+  el.addEventListener("change", generateTimetable);
+});
+
+
+generateTimetable();
 
 // ===== Segmented Time Picker Logic =====
 const segHour = document.getElementById("segHour");
@@ -2442,6 +2528,7 @@ function openSeg(type){
       option.addEventListener("click", ()=>{
         segHour.textContent = option.textContent;
         closeSeg();
+        generateTimetable();
       });
       segDropdown.appendChild(option);
     }
@@ -2455,6 +2542,7 @@ function openSeg(type){
       option.addEventListener("click", ()=>{
         segMinute.textContent = option.textContent;
         closeSeg();
+        generateTimetable();
       });
       segDropdown.appendChild(option);
     }
@@ -2468,6 +2556,7 @@ function openSeg(type){
       option.addEventListener("click", ()=>{
         segAmPm.textContent = val;
         closeSeg();
+        generateTimetable();
       });
       segDropdown.appendChild(option);
     });
@@ -2488,13 +2577,23 @@ segWrap.addEventListener("click",(e)=>{
 document.addEventListener("click",(e)=>{
   if (!e.target.closest(".segTimeWrap")){
     closeSeg();
+    generateTimetable();
+
   }
 });
 
 function getStartTime24(){
-  let hour = parseInt(segHour.textContent);
-  const minute = parseInt(segMinute.textContent);
-  const ampm = segAmPm.textContent;
+  const segHourEl = document.getElementById("segHour");
+  const segMinuteEl = document.getElementById("segMinute");
+  const segAmPmEl = document.getElementById("segAmPm");
+
+  if (!segHourEl || !segMinuteEl || !segAmPmEl){
+    return { hour: 9, minute: 0 }; // fallback
+  }
+
+  let hour = parseInt(segHourEl.textContent, 10);
+  const minute = parseInt(segMinuteEl.textContent, 10);
+  const ampm = segAmPmEl.textContent;
 
   if (ampm === "PM" && hour !== 12) hour += 12;
   if (ampm === "AM" && hour === 12) hour = 0;
@@ -2506,30 +2605,41 @@ function getStartTime24(){
 
 
 
-function generateTimetable(){
-  if (!subjects.length) return;
 
-  
+function generateTimetable(){
+  if (!subjects.length){
+    if (timetableGrid) timetableGrid.innerHTML = "";
+    updateTimetableMeta(undefined, undefined);
+    return;
+  }
+
   const totalHours = parseFloat(totalHoursInput.value);
 
-  if (!totalHours) return;
+  if (!totalHours){
+    if (timetableGrid) timetableGrid.innerHTML = "";
+    updateTimetableMeta(undefined, undefined);
+    return;
+  }
 
   timetableGrid.innerHTML = "";
 
   const { hour, minute } = getStartTime24();
 let currentMinutes = hour * 60 + minute;
-
+  const startMinutes = currentMinutes;
 
   const totalMinutes = totalHours * 60;
   const blockMinutes = Math.floor(totalMinutes / subjects.length);
 
 const breakMinutes = parseInt(breakMinutesInput.value) || 0;
+const filledSubjects = subjects.filter(s => s.trim());
+if (!filledSubjects.length) return;
+
 const studyBlockMinutes = Math.floor(
-  (totalMinutes - (breakMinutes * (subjects.length - 1))) 
-  / subjects.length
+  (totalMinutes - (breakMinutes * (filledSubjects.length - 1))) 
+  / filledSubjects.length
 );
 
-subjects.forEach((subject, index) => {
+subjects.filter(s => s.trim()).forEach((subject, index) => {
   if (!subject.trim()) return;
 
   // Study Block
@@ -2540,11 +2650,18 @@ subjects.forEach((subject, index) => {
 studyRow.dataset.type = "study";
 studyRow.dataset.index = index;
 
+  const color = getSubjectColor(index);
 
   studyRow.innerHTML = `
-    <div class="ttAccent"></div>
+    <div class="ttAccent" style="background:${color};"></div>
     <div class="ttBlockContent">
-      <div class="ttTime">${formatMinutes(currentMinutes)} - ${formatMinutes(studyEnd)}</div>
+      <div class="ttTime">
+  ${formatMinutes(currentMinutes)} - ${formatMinutes(studyEnd)}
+  <span style="margin-left:8px; opacity:0.6; font-weight:600;">
+    • ${studyBlockMinutes}m
+  </span>
+</div>
+
       <div class="ttSubject">${subject}</div>
     </div>
   `;
@@ -2563,9 +2680,15 @@ breakRow.dataset.type = "break";
 breakRow.dataset.index = index;
 
 breakRow.innerHTML = `
-  <div class="ttAccent"></div>
+  <div class="ttAccent" style="background: var(--muted); opacity:0.45;"></div>
   <div class="ttBlockContent">
-    <div class="ttTime">${formatMinutes(currentMinutes)} - ${formatMinutes(breakEnd)}</div>
+    <div class="ttTime">
+  ${formatMinutes(currentMinutes)} - ${formatMinutes(breakEnd)}
+  <span style="margin-left:8px; opacity:0.6; font-weight:600;">
+    • ${breakMinutes}m
+  </span>
+</div>
+
     <div class="ttSubject">Break</div>
   </div>
 `;
@@ -2576,6 +2699,8 @@ breakRow.innerHTML = `
     currentMinutes = breakEnd;
   }
 });
+
+  updateTimetableMeta(startMinutes, currentMinutes);
 
 }
 function highlightScheduleBlock(index){
@@ -2591,11 +2716,36 @@ function formatMinutes(total){
   return `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`;
 }
 
+function updateTimetableMeta(startMinutes, endMinutes){
+
+  const ssb = document.getElementById("startScheduleBtn");
+
+  if (ssb){
+    const hasBlocks = timetableGrid && timetableGrid.querySelectorAll(".ttBlock").length > 0;
+    ssb.disabled = !hasBlocks;
+  }
+
+  const topMeta = document.getElementById("ttTopMeta");
+
+  if (topMeta && typeof startMinutes === "number" && typeof endMinutes === "number"){
+    topMeta.textContent = `${formatMinutes(startMinutes)} – ${formatMinutes(endMinutes)}`;
+  }
+}
+
+
+  const ssb = document.getElementById("startScheduleBtn");
+  if (ssb){
+    const hasBlocks = timetableGrid && timetableGrid.querySelectorAll(".ttBlock").length > 0;
+    ssb.disabled = !hasBlocks;
+  }
+
+  const topMeta = document.getElementById("ttTopMeta");
+  if (topMeta && typeof startMinutes === "number" && typeof endMinutes === "number"){
+    topMeta.textContent = `${formatMinutes(startMinutes)} – ${formatMinutes(endMinutes)}`;
+  }
 
 
 
-
-generateBtn.addEventListener("click", generateTimetable);
 
 const startScheduleBtn = document.getElementById("startScheduleBtn");
 
