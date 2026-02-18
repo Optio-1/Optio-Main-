@@ -85,12 +85,16 @@
 
     *{ box-sizing:border-box; }
     body{
-      margin:0;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
-      background: var(--bg);
-      color: var(--text);
-      overflow-x:hidden;
-    }
+  margin:0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+  background: var(--bg);
+  color: var(--text);
+  overflow-x:hidden;
+
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+}
 
     /* =========================
        SIDEBAR
@@ -174,9 +178,10 @@
     ========================== */
    .wrap{
   margin-left: 0;
-  min-height: auto;
   padding: 22px 26px;
+  flex:1;
 }
+
 
     
 
@@ -2663,4 +2668,5 @@ clearTimetableBtn.addEventListener("click", () => {
 
 </body>
 </html>
+
 
