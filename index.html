@@ -1,9 +1,11 @@
+
 <!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Optio</title>
+  <title>Optio – Visual Focus Timer & Study Planner</title>
+  <meta name="description" content="Optio is a visual focus timer and smart study planner designed to help students focus better, track sessions, and build productive routines.">
 
   <style>
     /* =========================
@@ -203,14 +205,21 @@
     .leftHead{
       display:flex;
       align-items:center;
-      gap: 12px;
+      gap: 16px;
       padding-left: 6px;
     }
     
-.titlePill{
+.brandBlock{
   position: fixed;
   top: 18px;
-  left: 72px; /* burger width + spacing */
+  left: 72px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  z-index: 60;
+}
+
+.titlePill{
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -222,7 +231,14 @@
   letter-spacing: 0.2px;
   font-size: 20px;
   user-select: none;
-  z-index: 60;
+}
+
+.heroTagline{
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted);
+  letter-spacing: 0.3px;
+  opacity: 0.85;
 }
 
     .rightHead{
@@ -1333,9 +1349,41 @@ body.running #visFlip .timeBig{
     font-size: 18px;
   }
 
+  .brandBlock{
+    left: 68px;
+  }
+
+  .heroTagline{
+    font-size: 12px;
+    max-width: 70vw;
+  }
+
 }
 
-  </style>
+  
+.betaTag{
+  font-size:10px;
+  margin-left:6px;
+  padding:2px 6px;
+  border-radius:999px;
+  background:var(--accent2);
+  color:var(--accent);
+  font-weight:800;
+}
+
+button{
+  transition: transform 0.08s ease, background 0.15s ease;
+}
+
+button:hover{
+  transform: translateY(-2px);
+}
+
+button:active{
+  transform: translateY(1px);
+}
+
+</style>
 </head>
 
 <body>
@@ -1361,7 +1409,12 @@ body.running #visFlip .timeBig{
     <!-- Header shared across pages -->
     <header id="mainHeader">
   <div class="leftHead">
-    <div class="titlePill">Optio</div>
+    <div class="brandBlock">
+      <div class="titlePill">Optio <span class="betaTag">Beta</span></div>
+      <div class="heroTagline">
+        Visual Focus Timer & Smart Study Planner
+      </div>
+    </div>
   </div>
 
   <div></div>
@@ -2598,6 +2651,11 @@ clearTimetableBtn.addEventListener("click", () => {
   setStyle("ring");
   setActivePage("timer");
 </script>
+
+
+<footer style="margin-top:60px;padding:20px;text-align:center;font-size:12px;color:var(--muted);border-top:1px solid var(--stroke);">
+  © 2026 Optio · Privacy · Terms · Contact
+</footer>
 
 </body>
 </html>
