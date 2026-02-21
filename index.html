@@ -2770,9 +2770,11 @@ startScheduleBtn.addEventListener("click", () => {
     const timeText = row.querySelector(".ttTime").textContent;
     const subjectText = row.querySelector(".ttSubject").textContent;
 
-    const [start, end] = timeText.split(" - ");
-    const [sh, sm] = start.split(":").map(Number);
-    const [eh, em] = end.split(":").map(Number);
+    const [startPart, endPartRaw] = timeText.split(" - ");
+    const endPart = endPartRaw.split("•")[0].trim();
+
+    const [sh, sm] = startPart.trim().split(":").map(Number);
+    const [eh, em] = endPart.trim().split(":").map(Number);
 
     const duration = ((eh * 60 + em) - (sh * 60 + sm)) * 60000;
 
